@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinema POS & Smart Booking</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div>
+        <h1>Cinema POS & Smart Booking</h1>
+        <p>Hệ thống bán vé tại quầy, chọn ghế trực quan, tính tiền real-time và thống kê doanh thu.</p>
+      </div>
+      <button class="reset-btn" id="resetBtn">Reset dữ liệu</button>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <h2 class="panel-title">Sơ đồ rạp</h2>
+
+        <div class="movie-box">
+          <select id="movieSelect"></select>
+          <strong id="basePriceText">0đ</strong>
+        </div>
+
+        <div class="screen">SCREEN</div>
+        <div id="seatMap" class="seat-map"></div>
+
+        <div class="legend">
+          <div class="legend-item"><span class="dot normal"></span> Ghế thường x1</div>
+          <div class="legend-item"><span class="dot vip"></span> Ghế VIP x1.5</div>
+          <div class="legend-item"><span class="dot couple"></span> Ghế Couple x2</div>
+          <div class="legend-item"><span class="dot selected"></span> Đang chọn</div>
+          <div class="legend-item"><span class="dot sold"></span> Đã bán</div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2 class="panel-title">Giỏ hàng</h2>
+        <div id="cartList" class="cart-list"></div>
+
+        <div class="total-box">
+          <span>Tổng tiền</span>
+          <span id="totalPrice">0đ</span>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-success" id="checkoutBtn">Thanh toán</button>
+        </div>
+
+        <div class="auto-pick">
+          <h3>Chọn nhanh ghế liền kề</h3>
+          <input type="number" id="autoPickNumber" min="1" max="8" placeholder="Nhập số lượng khách" />
+          <button class="btn btn-primary" id="autoPickBtn">Chọn nhanh</button>
+        </div>
+
+        <div id="messageBox" class="message"></div>
+
+        <div class="revenue">
+          <h3>Dashboard doanh thu</h3>
+          <p>Tổng doanh thu: <strong id="revenueText">0đ</strong></p>
+          <canvas id="revenueChart" width="500" height="260"></canvas>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
