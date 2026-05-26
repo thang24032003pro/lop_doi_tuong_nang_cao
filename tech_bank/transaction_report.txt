@@ -1,0 +1,22 @@
+=== TRẠNG THÁI BAN ĐẦU ===
+Alice: 5000 | Bob: 1000 | Charlie: 2000
+TỔNG TIỀN HỆ THỐNG: 8000
+
+=== LỊCH SỬ GIAO DỊCH HỢP LỆ ===
+Alice chuyển 2000 cho Bob: GIAO DỊCH THÀNH CÔNG
+-> Số dư Alice: 3000 | Bob: 3000
+Bob chuyển 1500 cho Charlie: GIAO DỊCH THÀNH CÔNG
+-> Số dư Bob: 1500 | Charlie: 3500
+Charlie chuyển 500 cho Alice: GIAO DỊCH THÀNH CÔNG
+-> Số dư Charlie: 3000 | Alice: 3500
+
+=== KIỂM THỬ KỊCH BẢN LỖI (EDGE CASES) ===
+Alice tự chuyển cho chính mình 1000: GIAO DỊCH THẤT BẠI: KHÔNG THỂ TỰ CHUYỂN TIỀN CHO CHÍNH MÌNH
+Alice chuyển số tiền âm (-500) cho Bob: GIAO DỊCH THẤT BẠI: SỐ TIỀN PHẢI LỚN HƠN 0
+Bob cố tình chuyển quá số dư (10000): GIAO DỊCH THẤT BẠI: SỐ DƯ TÀI KHOẢN KHÔNG ĐỦ
+Alice chuyển tiền vào một chuỗi văn bản 'Charlie': GIAO DỊCH THẤT BẠI: TÀI KHOẢN ĐÍCH KHÔNG HỢP LỆ
+
+=== TRẠNG THÁI CUỐI CÙNG ===
+Alice: 3500 | Bob: 1500 | Charlie: 3000
+TỔNG TIỀN HỆ THỐNG: 8000
+XÁC MINH DÒNG TIỀN BẢO TOÀN: HỢP LỆ
