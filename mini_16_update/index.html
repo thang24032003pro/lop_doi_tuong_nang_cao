@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinema Admin Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div>
+        <h1>Cinema Admin Dashboard</h1>
+        <p>Phiên bản refactor của Mini Project 2: quản lý đa phòng chiếu, xử lý mảng hiện đại, deep clone, sort đúng kiểu số và đệ quy điểm thưởng.</p>
+      </div>
+      <button class="btn btn-danger" id="resetBtn">Reset dữ liệu</button>
+    </header>
+
+    <section class="layout">
+      <div>
+        <section class="panel">
+          <h2>POS đa phòng chiếu</h2>
+          <div class="controls">
+            <select id="movieSelect"></select>
+            <input id="customerName" placeholder="Tên khách hàng" />
+            <input id="customerId" placeholder="Mã khách hàng, ví dụ KH001" />
+          </div>
+
+          <div id="roomTabs" class="room-tabs"></div>
+          <div class="screen">SCREEN</div>
+          <div id="seatMap" class="seat-map"></div>
+
+          <div class="legend">
+            <span><i class="dot normal"></i>Ghế thường</span>
+            <span><i class="dot vip"></i>VIP</span>
+            <span><i class="dot couple"></i>Couple</span>
+            <span><i class="dot selected"></i>Đang chọn</span>
+            <span><i class="dot sold"></i>Đã bán</span>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Admin Dashboard - Phim đang chiếu</h2>
+          <div class="controls">
+            <input id="searchMovie" placeholder="Tìm phim theo tên" />
+            <select id="sortMovie">
+              <option value="default">Sắp xếp mặc định</option>
+              <option value="nameAsc">Tên A-Z</option>
+              <option value="priceAsc">Giá tăng dần</option>
+              <option value="priceDesc">Giá giảm dần</option>
+              <option value="revenueDesc">Doanh thu cao nhất</option>
+            </select>
+            <button class="btn btn-dark" id="mockBtn">Tạo 1000 giao dịch</button>
+          </div>
+          <div id="movieList" class="movie-list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Báo cáo DataStream</h2>
+          <div class="stats">
+            <div class="stat-card">
+              <span>Tổng doanh thu</span>
+              <strong id="totalRevenue">0đ</strong>
+            </div>
+            <div class="stat-card">
+              <span>Số giao dịch</span>
+              <strong id="totalTransactions">0</strong>
+            </div>
+            <div class="stat-card">
+              <span>Vé VIP đã bán</span>
+              <strong id="totalVipTickets">0</strong>
+            </div>
+          </div>
+          <div id="reportList" class="report-list"></div>
+        </section>
+      </div>
+
+      <aside>
+        <section class="panel">
+          <h2>Giỏ hàng</h2>
+          <div id="cartList" class="cart-list"></div>
+          <div class="total-box">
+            <span>Tổng tiền</span>
+            <span id="cartTotal">0đ</span>
+          </div>
+          <button class="btn btn-success" id="checkoutBtn">Chốt đơn</button>
+          <div id="messageBox" class="message"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Tìm giao dịch</h2>
+          <input id="searchTransaction" placeholder="Nhập mã khách hàng" />
+          <div id="transactionList" class="transaction-list" style="margin-top: 12px;"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Referral Points - Đệ quy</h2>
+          <div class="controls" style="grid-template-columns: 1fr auto;">
+            <select id="referralSelect"></select>
+            <button class="btn btn-primary" id="calcPointBtn">Tính điểm</button>
+          </div>
+          <div id="referralResult" class="note">Chọn khách hàng để tính điểm thưởng đa cấp.</div>
+        </section>
+
+        <section class="panel">
+          <h2>Ghi chú kỹ thuật</h2>
+          <div class="note">
+            Dự án đã tách hàm theo SRP: hàm tính toán không render DOM, hàm render không lưu storage. Lịch sử giao dịch dùng deep clone để tránh lỗi tham chiếu. Sort dùng callback số học để tránh lỗi 100 đứng trước 20.
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
