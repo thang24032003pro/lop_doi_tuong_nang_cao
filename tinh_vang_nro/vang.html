@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tính Vàng Và Thỏi Vàng</title>
+<style>
+:root{--bg:#f7f2e8;--card:#fffaf2;--text:#241d14;--muted:#6c5d49;--line:#e5d4ba;--accent:#c58a1f;--accent2:#8b5f12;}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top left,rgba(197,138,31,.15),transparent 28%),linear-gradient(180deg,#fbf7ef 0%,var(--bg) 100%);color:var(--text);min-height:100vh;display:grid;place-items:center;padding:16px}
+.wrap{width:min(620px,100%);background:rgba(255,250,242,.96);border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 36px rgba(89,62,20,.12);padding:16px}
+.title{margin:0 0 10px;font-size:22px;font-weight:800}
+.rule{color:var(--muted);font-size:14px;margin:0 0 14px}
+.row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-bottom:12px}
+.field{display:grid;gap:6px}
+.field span{font-size:14px;font-weight:700}
+.field input{width:100%;border:1px solid #d9c7aa;border-radius:12px;padding:13px 14px;font-size:18px;background:#fff;color:var(--text);outline:none}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(197,138,31,.12)}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:700;cursor:pointer;background:linear-gradient(180deg,#d6a33c,var(--accent));color:#fff;height:fit-content}
+.box{border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:10px;padding:12px 14px;display:grid;gap:4px}
+.box strong{font-size:13px;color:var(--accent2)}
+.box .value{font-size:22px;font-weight:800;line-height:1.15}
+.box .sub{font-size:14px;color:var(--muted)}
+.upgrade-list{display:grid;gap:8px;margin-top:10px}
+.upgrade-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #eadbc2;border-radius:12px;background:#fffdf8}
+.upgrade-level{font-weight:800;color:var(--accent2)}
+.upgrade-attack{font-weight:700}
+.upgrade-note{font-size:12px;color:var(--muted)}
+@media (max-width:560px){.row{grid-template-columns:1fr}.btn{width:100%}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<h1 class="title">Quy đổi vàng và thỏi</h1>
+<div class="row"><label class="field"><span>Vàng</span><input id="goldInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 11.000.000" /></label><button class="btn" id="toBar">Đổi</button></div>
+<div class="box"><strong>Kết quả từ vàng</strong><div class="value" id="goldResult">0 thỏi</div><div class="sub" id="goldRemain">0 vàng dư</div></div>
+<div class="row" style="margin-top:14px"><label class="field"><span>Thỏi vàng</span><input id="barInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 3" /></label><button class="btn" id="toGold">Đổi</button></div>
+<div class="box"><strong>Kết quả từ thỏi</strong><div class="value" id="barResult">0 vàng</div><div class="sub" id="barDetail">0 thỏi 0 vàng dư</div></div>
+<div class="box" style="margin-top:14px"><strong>Nâng cấp găng tay</strong><div class="row" style="margin-top:6px"><label class="field"><span>Chỉ số tấn công</span><input id="attackInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 1000000" /></label><button class="btn" id="calcUpgrade">Tính cấp 8</button></div><div class="value" id="upgradeResult">Cấp 8: 0</div><div class="upgrade-note" id="upgradeSummary">Cấp 1 đến cấp 8 sẽ được hiển thị bên dưới.</div><div class="upgrade-list" id="upgradeList"></div></div>
+</main>
+<script>
+const GOLD_PER_BAR = 37000000;
+const goldInput = document.getElementById('goldInput');
+const barInput = document.getElementById('barInput');
+const attackInput = document.getElementById('attackInput');
+const goldResult = document.getElementById('goldResult');
+const goldRemain = document.getElementById('goldRemain');
+const barResult = document.getElementById('barResult');
+const barDetail = document.getElementById('barDetail');
+const upgradeResult = document.getElementById('upgradeResult');
+const upgradeSummary = document.getElementById('upgradeSummary');
+const upgradeList = document.getElementById('upgradeList');
+
+function parseNumber(value) { return Number(String(value).replace(/[^0-9]/g, '')) || 0; }
+function onlyDigits(value) { return String(value).replace(/\D/g, ''); }
+function formatNumber(value) { return onlyDigits(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function formatInput(value) { const digits = onlyDigits(value); return digits ? formatNumber(digits) : ''; }
+
+function keepCaret(input, rawValue, formattedValue) {
+  const selectionStart = input.selectionStart ?? rawValue.length;
+  const digitsBeforeCaret = onlyDigits(rawValue.slice(0, selectionStart)).length;
+  if (!digitsBeforeCaret) return 0;
+  let digitCount = 0;
+  for (let index = 0; index < formattedValue.length; index += 1) {
+    if (/\d/.test(formattedValue[index])) digitCount += 1;
+    if (digitCount >= digitsBeforeCaret) return index + 1;
+  }
+  return formattedValue.length;
+}
+
+function finalizeInput(input) { input.value = formatInput(input.value); }
+
+function renderGold() {
+  const gold = parseNumber(goldInput.value);
+  const bars = Math.floor(gold / GOLD_PER_BAR);
+  const remain = gold % GOLD_PER_BAR;
+  goldResult.textContent = `${formatNumber(bars)} thỏi`;
+  goldRemain.textContent = `${formatNumber(remain)} vàng dư`;
+}
+
+function renderBar() {
+  const bars = parseNumber(barInput.value);
+  const gold = bars * GOLD_PER_BAR;
+  const remain = gold % GOLD_PER_BAR;
+  barResult.textContent = `${formatNumber(gold)} vàng`;
+  barDetail.textContent = `${formatNumber(bars)} thỏi ${formatNumber(remain)} vàng dư`;
+}
+
+function renderUpgrade() {
+  const baseAttack = parseNumber(attackInput.value);
+  upgradeList.innerHTML = '';
+
+  if (!baseAttack) {
+    upgradeResult.textContent = 'Cấp 8: 0';
+    upgradeSummary.textContent = 'Cấp 1 đến cấp 8 sẽ được hiển thị bên dưới.';
+    for (let level = 1; level <= 8; level += 1) {
+      const row = document.createElement('div');
+      row.className = 'upgrade-row';
+      row.innerHTML = `<div class="upgrade-level">Cấp ${level}</div><div class="upgrade-attack">0</div><div class="upgrade-note">+10% so với cấp trước</div>`;
+      upgradeList.appendChild(row);
+    }
+    return;
+  }
+
+  for (let level = 1; level <= 8; level += 1) {
+    const attackValue = Math.round(baseAttack * Math.pow(1.1, level));
+    const row = document.createElement('div');
+    row.className = 'upgrade-row';
+    row.innerHTML = `<div class="upgrade-level">Cấp ${level}</div><div class="upgrade-attack">${formatNumber(attackValue)}</div><div class="upgrade-note">+10%</div>`;
+    upgradeList.appendChild(row);
+    if (level === 8) {
+      upgradeResult.textContent = `Cấp 8: ${formatNumber(attackValue)}`;
+      upgradeSummary.textContent = `Từ ${formatNumber(baseAttack)} lên cấp 8 là ${formatNumber(attackValue)} tấn công.`;
+    }
+  }
+}
+
+goldInput.addEventListener('input', () => { renderGold(); });
+goldInput.addEventListener('blur', () => { finalizeInput(goldInput); renderGold(); });
+barInput.addEventListener('input', () => { renderBar(); });
+barInput.addEventListener('blur', () => { finalizeInput(barInput); renderBar(); });
+attackInput.addEventListener('input', () => { renderUpgrade(); });
+attackInput.addEventListener('blur', () => { finalizeInput(attackInput); renderUpgrade(); });
+document.getElementById('toBar').addEventListener('click', () => { finalizeInput(goldInput); renderGold(); });
+document.getElementById('toGold').addEventListener('click', () => { finalizeInput(barInput); renderBar(); });
+document.getElementById('calcUpgrade').addEventListener('click', () => { finalizeInput(attackInput); renderUpgrade(); });
+
+renderGold();
+renderBar();
+renderUpgrade();
+</script>
+</body>
+</html>
