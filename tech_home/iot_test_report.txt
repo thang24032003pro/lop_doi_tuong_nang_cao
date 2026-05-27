@@ -1,0 +1,31 @@
+=== KIỂM THỬ 1: KÍCH HOẠT KHI CHƯA LIÊN KẾT ===
+Thực thi: sensor1.trigger()
+Kết quả:
+Cảm biến S01 phát hiện có chuyển động!
+CẢNH BÁO: Cảm biến chưa được liên kết với thiết bị nào.
+
+=== KIỂM THỬ 2: KẾT NỐI VÀ TƯƠNG TÁC ĐÈN 1 ===
+Thực thi: sensor1.connectDevice(light1) -> sensor1.trigger()
+Kết quả:
+Cảm biến S01 đã kết nối tới thiết bị L01
+Cảm biến S01 phát hiện có chuyển động!
+Đèn L01 đã BẬT.
+
+=== KIỂM THỬ 3: THAY ĐỔI LIÊN KẾT SANG ĐÈN 2 ===
+Thực thi: sensor1.connectDevice(light2) -> sensor1.trigger()
+Kết quả:
+Cảm biến S01 đã kết nối tới thiết bị L02
+Cảm biến S01 phát hiện có chuyển động!
+Đèn L02 đã BẬT.
+
+=== KIỂM THỬ 4: NGẮT KẾT NỐI VÀ KIỂM TRA LẠI ===
+Thực thi: sensor1.disconnectDevice() -> sensor1.trigger()
+Kết quả:
+Cảm biến S01 đã ngắt toàn bộ kết nối.
+Cảm biến S01 phát hiện có chuyển động!
+CẢNH BÁO: Cảm biến chưa được liên kết với thiết bị nào.
+
+=== KIỂM THỬ 5: TRUYỀN ĐỐI TƯỢNG SAI THIẾT KẾ (DỮ LIỆU GIẢ) ===
+Thực thi: sensor1.connectDevice({ name: "FakeDevice" })
+Kết quả:
+LỖI: Thiết bị kết nối không hợp lệ hoặc không hỗ trợ chức năng.

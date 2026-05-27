@@ -1,0 +1,3 @@
+Prompt 1: Tôi đang làm dự án lập trình drone. Hãy liệt kê các trường hợp dữ liệu đầu vào dị thường (edge-cases) liên quan đến tham số kiểu số và trạng thái pin có thể làm lỗi logic của một hàm thay đổi độ cao.
+
+Prompt 2: Trong JavaScript (ES6+), giải thích ngắn gọn cơ chế chặn truy cập của trình biên dịch V8 khi sử dụng ký tự # trước tên thuộc tính. Tại sao từ khóa this ết hợp với # lại không thể bị ghi đè từ bên ngoài?

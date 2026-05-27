@@ -1,0 +1,27 @@
+=== KIỂM THỬ VẬN HÀNH BÌNH THƯỜNG ===
+Khởi tạo DRN-99 thành công. Trạng thái: { id: 'DRN-99', altitude: 0, battery: 100 }
+Gọi hàm bay lên 50m thành công. Trạng thái: { id: 'DRN-99', altitude: 50, battery: 75 }
+Gọi hàm bay xuống 20m thành công. Trạng thái: { id: 'DRN-99', altitude: 30, battery: 75 }
+
+=== HACK 1: CỐ TÌNH GÁN TRỰC TIẾP BIẾN PRIVATE ===
+Thực thi: deliveryDrone.#altitude = 1000
+Kết quả: SyntaxError: Private field '#altitude' must be declared in an enclosing class
+Thực thi: deliveryDrone.#battery = 100
+Kết quả: SyntaxError: Private field '#battery' must be declared in an enclosing class
+
+=== HACK 2: VƯỢT TRẦN BAY AN TOÀN ===
+Thực thi: deliveryDrone.flyUp(150)
+Kết quả: LỖI: Vượt quá trần bay an toàn 120m.
+
+=== HACK 3: TRUYỀN SAI KIỂU DỮ LIỆU ===
+Thực thi: deliveryDrone.flyUp("mười mét")
+Kết quả: LỖI: Tham số mét bay lên không hợp lệ.
+
+=== HACK 4: TRUYỀN GIÁ TRỊ ÂM ===
+Thực thi: deliveryDrone.flyUp(-50)
+Kết quả: LỖI: Tham số mét bay lên không hợp lệ.
+
+=== HACK 5: ÉP DRONE BAY KHI HẾT PIN ===
+(Giả lập bay liên tục tiêu hao pin về 0)
+Thực thi: deliveryDrone.flyUp(10) khi pin bằng 0
+Kết quả: LỖI: Không thể cất cánh, drone đã hết pin.
