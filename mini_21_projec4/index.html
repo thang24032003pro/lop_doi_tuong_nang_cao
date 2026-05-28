@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>TechCinema OOP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f5f5f5;
+    }
+
+    .seat {
+      width: 45px;
+      height: 45px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      background: #2ecc71;
+      color: white;
+      cursor: pointer;
+    }
+
+    .seat.booked {
+      background: #e74c3c;
+      cursor: not-allowed;
+    }
+
+    #seatContainer {
+      margin-top: 20px;
+    }
+
+    #result, #report {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>TechCinema - OOP Booking System</h1>
+
+  <h3>Khách hàng: Nguyễn Văn A</h3>
+  <h3>Phim: Avengers</h3>
+  <h3>Phòng chiếu: Room 01</h3>
+
+  <div id="seatContainer"></div>
+
+  <div id="result"></div>
+  <div id="report"></div>
+
+  <script>
+    class Movie {
+      #basePrice;
+
+      constructor(id, title, basePrice = 0) {
+        this.id = id;
+        this.title = title;
+        this.basePrice = basePrice;
+      }
+
+      get basePrice() {
+        return this.#basePrice;
+      }
+
+      set basePrice(value) {
+        if (typeof value !== "number" || value < 0) {
+          throw new Error("Giá vé không được âm hoặc sai kiểu dữ liệu");
+        }
+        this.#basePrice = value;
+      }
+    }
+
+    class Room {
+      #seatMap;
+
+      constructor(roomId, rows = 3, cols = 4) {
+        this.roomId = roomId;
+        this.#seatMap = [];
+
+        for (let i = 0; i < rows; i++) {
+          const row = [];
+          for (let j = 0; j < cols; j++) {
+            row.push(false);
+          }
+          this.#seatMap.push(row);
+        }
+      }
+
+      get seatMap() {
+        return this.#seatMap.map(row => [...row]);
+      }
+
+      set seatMap(newSeatMap) {
+        if (!Array.isArray(newSeatMap) || newSeatMap.length === 0) {
+          throw new Error("Sơ đồ ghế không hợp lệ");
+        }
+
+        const isValid = newSeatMap.every(row =>
+          Array.isArray(row) && row.every(seat => typeof seat === "boolean")
+        );
+
+        if (!isValid) {
+          throw new Error("Sơ đồ ghế chỉ được chứa giá trị true hoặc false");
+        }
+
+        this.#seatMap = newSeatMap.map(row => [...row]);
+      }
+
+      bookSeat(row, col) {
+        if (
+          row < 0 ||
+          col < 0 ||
+          row >= this.#seatMap.length ||
+          col >= this.#seatMap[row].length
+        ) {
+          return false;
+        }
+
+        if (this.#seatMap[row][col] === true) {
+          return false;
+        }
+
+        this.#seatMap[row][col] = true;
+        return true;
+      }
+
+      isSeatBooked(row, col) {
+        return this.#seatMap[row][col] === true;
+      }
+    }
+
+    class Customer {
+      #balance;
+
+      constructor(id, name, balance = 0) {
+        this.id = id;
+        this.name = name;
+        this.balance = balance;
+      }
+
+      get balance() {
+        return this.#balance;
+      }
+
+      set balance(value) {
+        if (typeof value !== "number" || value < 0) {
+          throw new Error("Số dư khách hàng không hợp lệ");
+        }
+        this.#balance = value;
+      }
+    }
+
+    class Ticket {
+      #price;
+
+      constructor(ticketId, movie, room, customer, row, col, price) {
+        this.ticketId = ticketId;
+        this.movie = movie;
+        this.room = room;
+        this.customer = customer;
+        this.row = row;
+        this.col = col;
+        this.price = price;
+        this.createdAt = new Date();
+      }
+
+      get price() {
+        return this.#price;
+      }
+
+      set price(value) {
+        if (typeof value !== "number" || value < 0) {
+          throw new Error("Giá vé của ticket không hợp lệ");
+        }
+        this.#price = value;
+      }
+
+      getInfo() {
+        return `
+          Mã vé: ${this.ticketId}<br>
+          Khách hàng: ${this.customer.name}<br>
+          Phim: ${this.movie.title}<br>
+          Phòng: ${this.room.roomId}<br>
+          Ghế: Hàng ${this.row + 1}, Cột ${this.col + 1}<br>
+          Giá vé: ${this.price.toLocaleString()} VNĐ
+        `;
+      }
+    }
+
+    class Transaction {
+      constructor(transactionId, ticket) {
+        this.transactionId = transactionId;
+        this.ticket = ticket;
+        this.createdAt = new Date();
+      }
+    }
+
+    class BookingSystem {
+      #transactionHistory;
+      #revenue;
+
+      constructor(rooms = [], movies = []) {
+        this.rooms = rooms;
+        this.movies = movies;
+        this.#transactionHistory = [];
+        this.#revenue = 0;
+      }
+
+      get revenue() {
+        return this.#revenue;
+      }
+
+      get transactionHistory() {
+        return [...this.#transactionHistory];
+      }
+
+      findRoom(roomId) {
+        return this.rooms.find(room => room.roomId === roomId);
+      }
+
+      findMovie(movieId) {
+        return this.movies.find(movie => movie.id === movieId);
+      }
+
+      buyTicket(customer, movieId, roomId, row, col) {
+        const movie = this.findMovie(movieId);
+        const room = this.findRoom(roomId);
+
+        if (!movie || !room) {
+          return null;
+        }
+
+        const isBooked = room.bookSeat(row, col);
+
+        if (!isBooked) {
+          return null;
+        }
+
+        const ticket = new Ticket(
+          "TICKET-" + Date.now(),
+          movie,
+          room,
+          customer,
+          row,
+          col,
+          movie.basePrice
+        );
+
+        const transaction = new Transaction(
+          "TRANS-" + Date.now(),
+          ticket
+        );
+
+        this.#transactionHistory.push(transaction);
+        this.#revenue += ticket.price;
+
+        return ticket;
+      }
+
+      getDailyReport() {
+        const totalTickets = this.#transactionHistory.length;
+
+        const totalRevenue = this.#transactionHistory.reduce((sum, transaction) => {
+          return sum + transaction.ticket.price;
+        }, 0);
+
+        return {
+          totalTickets,
+          totalRevenue
+        };
+      }
+
+      renderSeats(roomId, movieId, customer, containerId) {
+        const room = this.findRoom(roomId);
+        const container = document.getElementById(containerId);
+
+        container.innerHTML = "";
+
+        const seatMap = room.seatMap;
+
+        seatMap.forEach((row, rowIndex) => {
+          const rowDiv = document.createElement("div");
+
+          row.forEach((seat, colIndex) => {
+            const button = document.createElement("button");
+            button.className = "seat";
+            button.textContent = `${rowIndex + 1}-${colIndex + 1}`;
+
+            if (seat === true) {
+              button.classList.add("booked");
+            }
+
+            button.addEventListener("click", () => {
+              const ticket = this.buyTicket(
+                customer,
+                movieId,
+                roomId,
+                rowIndex,
+                colIndex
+              );
+
+              const result = document.getElementById("result");
+
+              if (ticket) {
+                result.innerHTML = `
+                  <h3>Đặt vé thành công</h3>
+                  ${ticket.getInfo()}
+                `;
+              } else {
+                result.innerHTML = "<h3>Ghế đã được đặt hoặc không hợp lệ</h3>";
+              }
+
+              this.renderSeats(roomId, movieId, customer, containerId);
+              this.renderReport();
+            });
+
+            rowDiv.appendChild(button);
+          });
+
+          container.appendChild(rowDiv);
+        });
+      }
+
+      renderReport() {
+        const report = this.getDailyReport();
+
+        document.getElementById("report").innerHTML = `
+          <h3>Báo cáo doanh thu</h3>
+          Tổng số vé đã bán: ${report.totalTickets}<br>
+          Tổng doanh thu: ${report.totalRevenue.toLocaleString()} VNĐ
+        `;
+      }
+    }
+
+    const movie1 = new Movie("M01", "Avengers", 90000);
+    const movie2 = new Movie("M02", "Spider Man", 85000);
+
+    const room1 = new Room("R01", 3, 4);
+    const room2 = new Room("R02", 4, 5);
+
+    const customer1 = new Customer("C01", "Nguyễn Văn A", 500000);
+
+    const bookingSystem = new BookingSystem(
+      [room1, room2],
+      [movie1, movie2]
+    );
+
+    bookingSystem.renderSeats("R01", "M01", customer1, "seatContainer");
+    bookingSystem.renderReport();
+  </script>
+
+</body>
+</html>
