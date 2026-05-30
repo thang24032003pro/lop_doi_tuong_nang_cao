@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LuxeStay Hotel Management</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="models.js" defer></script>
+  <script src="utils.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar" aria-label="Thanh điều hướng">
+      <div class="brand">
+        <span>LS</span>
+        <strong>LuxeStay</strong>
+      </div>
+      <ul class="nav-list">
+        <li><button class="nav-btn active" type="button" data-view="clientView">Client View</button></li>
+        <li><button class="nav-btn" type="button" data-view="adminView">Admin Dashboard</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="app-shell">
+    <section id="clientView" class="view active-view">
+      <section class="client-layout">
+        <article class="panel booking-panel">
+          <div class="panel-title">
+            <p>Client View</p>
+            <h1>Đặt phòng khách sạn</h1>
+          </div>
+
+          <form id="bookingForm" class="booking-form">
+            <label>
+              Mã khách hàng
+              <input id="customerId" type="text" placeholder="VD: C003" autocomplete="off" />
+            </label>
+            <label>
+              Tên khách hàng
+              <input id="customerName" type="text" placeholder="Nguyễn Văn A" autocomplete="off" />
+            </label>
+            <label>
+              Số điện thoại
+              <input id="customerPhone" type="text" placeholder="0901234567" autocomplete="off" />
+            </label>
+            <label>
+              Người giới thiệu
+              <input id="referredBy" type="text" placeholder="VD: C002" autocomplete="off" />
+            </label>
+            <label class="full-field">
+              Phòng đã chọn
+              <input id="selectedRoom" type="text" placeholder="Chưa chọn phòng" readonly />
+            </label>
+
+            <div id="discountMessage" class="discount-message hidden"></div>
+            <div id="formMessage" class="form-message"></div>
+
+            <button class="btn btn-primary full-field" type="submit">Xác nhận đặt phòng</button>
+          </form>
+        </article>
+
+        <article class="panel room-panel">
+          <div class="panel-title room-head">
+            <div>
+              <p>Hotel Map</p>
+              <h2>Sơ đồ phòng</h2>
+            </div>
+            <button id="resetBtn" class="btn btn-danger" type="button">Reset dữ liệu</button>
+          </div>
+
+          <div class="filter-bar">
+            <select id="typeFilter">
+              <option value="all">Tất cả loại phòng</option>
+              <option value="Standard">Standard</option>
+              <option value="VIP">VIP</option>
+              <option value="President">President</option>
+            </select>
+            <input id="maxPriceFilter" type="number" min="0" placeholder="Giá tối đa" />
+            <button id="applyFilterBtn" class="btn btn-secondary" type="button">Lọc phòng</button>
+            <button id="clearFilterBtn" class="btn btn-light" type="button">Bỏ lọc</button>
+          </div>
+
+          <div class="group-box">
+            <input id="groupQuantity" type="number" min="1" placeholder="Số phòng liền kề" />
+            <button id="suggestBtn" class="btn btn-success" type="button">Gợi ý nhóm</button>
+          </div>
+
+          <div class="legend">
+            <span><i class="dot bg-green"></i>Trống</span>
+            <span><i class="dot bg-red"></i>Đã đặt</span>
+            <span><i class="dot bg-selected"></i>Đang chọn</span>
+            <span><i class="dot bg-highlight"></i>Gợi ý</span>
+          </div>
+
+          <div id="hotelMap" class="hotel-map"></div>
+        </article>
+      </section>
+    </section>
+
+    <section id="adminView" class="view" hidden>
+      <section class="admin-header">
+        <div class="panel stat-card">
+          <span>Tổng doanh thu</span>
+          <strong id="totalRevenue">0đ</strong>
+        </div>
+        <div class="panel stat-card">
+          <span>Tổng booking</span>
+          <strong id="totalBookings">0</strong>
+        </div>
+        <div class="panel stat-card">
+          <span>Hóa đơn trên 2 triệu</span>
+          <strong id="highValueBookings">0</strong>
+        </div>
+      </section>
+
+      <section class="admin-grid">
+        <article class="panel">
+          <div class="panel-title">
+            <p>Canvas</p>
+            <h2>Doanh thu theo loại phòng</h2>
+          </div>
+          <canvas id="revenueChart" width="720" height="330"></canvas>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <p>Room Management</p>
+            <h2>Thêm / Sửa / Xóa Phòng</h2>
+          </div>
+          <form id="adminRoomForm" class="admin-room-form">
+            <label>Room ID <input id="adminRoomId" type="text" placeholder="e.g. 101" /></label>
+            <label>Type
+              <select id="adminRoomType">
+                <option value="Standard">Standard</option>
+                <option value="VIP">VIP</option>
+                <option value="President">President</option>
+              </select>
+            </label>
+            <label>Floor <input id="adminRoomFloor" type="number" min="1" /></label>
+            <label>Base Price <input id="adminRoomPrice" type="number" min="0" /></label>
+            <div class="admin-room-actions">
+              <button id="adminAddRoom" class="btn btn-primary" type="button">Add Room</button>
+              <button id="adminUpdateRoom" class="btn btn-secondary" type="button">Update Room</button>
+              <button id="adminClearRoom" class="btn btn-light" type="button">Clear</button>
+            </div>
+          </form>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Room ID</th><th>Type</th><th>Floor</th><th>Price</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="roomsTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <p>Referral</p>
+            <h2>Khách hàng</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã KH</th>
+                  <th>Tên khách</th>
+                  <th>Giới thiệu bởi</th>
+                  <th>Điểm thưởng</th>
+                </tr>
+              </thead>
+              <tbody id="customerTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title table-title">
+          <div>
+            <p>Admin Dashboard</p>
+            <h2>Lịch sử giao dịch</h2>
+          </div>
+          <div class="table-actions">
+            <button id="sortAscBtn" class="btn btn-secondary" type="button">Giá tăng</button>
+            <button id="sortDescBtn" class="btn btn-secondary" type="button">Giá giảm</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã booking</th>
+                <th>Khách hàng</th>
+                <th>SĐT</th>
+                <th>Phòng</th>
+                <th>Loại</th>
+                <th>Giá gốc</th>
+                <th>Giảm</th>
+                <th>Tổng tiền</th>
+                <th>Thời gian</th>
+              </tr>
+            </thead>
+            <tbody id="bookingTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">
+          <p>Modern Arrays</p>
+          <h2>Báo cáo dữ liệu</h2>
+        </div>
+        <div id="arrayReport" class="array-report"></div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
