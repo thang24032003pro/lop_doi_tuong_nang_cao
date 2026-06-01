@@ -1,356 +1,370 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>TechCinema OOP</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      background: #f5f5f5;
-    }
-
-    .seat {
-      width: 45px;
-      height: 45px;
-      margin: 5px;
-      border: none;
-      border-radius: 8px;
-      background: #2ecc71;
-      color: white;
-      cursor: pointer;
-    }
-
-    .seat.booked {
-      background: #e74c3c;
-      cursor: not-allowed;
-    }
-
-    #seatContainer {
-      margin-top: 20px;
-    }
-
-    #result, #report {
-      margin-top: 20px;
-      padding: 15px;
-      background: white;
-      border-radius: 8px;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>TechCinema - OOP Booking System</h1>
-
-  <h3>Khách hàng: Nguyễn Văn A</h3>
-  <h3>Phim: Avengers</h3>
-  <h3>Phòng chiếu: Room 01</h3>
-
-  <div id="seatContainer"></div>
-
-  <div id="result"></div>
-  <div id="report"></div>
-
-  <script>
-    class Movie {
-      #basePrice;
-
-      constructor(id, title, basePrice = 0) {
-        this.id = id;
-        this.title = title;
-        this.basePrice = basePrice;
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>TechCinema - OOP Refactor</title>
+    <style>
+      :root{
+        --bg-0: #071124;
+        --bg-1: #0f172a;
+        --card: #ffffff;
+        --accent: #2563eb;
+        --accent-2: #06b6d4;
+        --success: #10b981;
+        --danger: #ef4444;
+        --muted: #64748b;
+      }
+      *,*::before,*::after{box-sizing:border-box}
+      body{
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        margin:0;min-height:100vh;padding:30px;background:linear-gradient(180deg,var(--bg-0) 0%, var(--bg-1) 60%);color:#0b1220;
       }
 
-      get basePrice() {
-        return this.#basePrice;
-      }
+      .container{max-width:1200px;margin:0 auto}
 
-      set basePrice(value) {
-        if (typeof value !== "number" || value < 0) {
-          throw new Error("Giá vé không được âm hoặc sai kiểu dữ liệu");
+      header{display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:20px}
+      header h1{margin:0;font-size:20px;letter-spacing:0.2px}
+      header .muted{opacity:0.9;font-size:13px}
+
+      .layout{display:grid;grid-template-columns:1fr 360px;gap:20px}
+
+      .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(2,6,23,0.5)}
+
+      .controls{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+      select,input{padding:10px;border-radius:10px;border:1px solid #eef2ff;background:#fbfdff}
+      input::placeholder{color:var(--muted)}
+
+      .controls .btn{display:inline-flex;align-items:center;gap:8px}
+
+      #seatContainer{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:10px;border:1px solid #f1f5f9;background:linear-gradient(180deg,#ffffff, #fbfdff)}
+
+      .seat-row{display:flex;gap:10px;align-items:center}
+      .row-label{width:34px;color:var(--muted);font-weight:800;text-align:center}
+
+      .seat{width:48px;height:44px;border-radius:10px;border:0;color:#fff;font-weight:800;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease}
+      .seat:hover{transform:translateY(-4px);box-shadow:0 8px 18px rgba(16,24,40,0.12)}
+      .seat.free{background:var(--success)}
+      .seat.booked{background:var(--danger);cursor:not-allowed;opacity:0.95}
+      .seat.selected{background:var(--accent-2)}
+
+      .legend{display:flex;gap:12px;align-items:center;margin-top:12px}
+      .legend-item{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+      .legend-dot{width:14px;height:14px;border-radius:4px}
+
+      .panel-compact{display:grid;gap:10px}
+      .btn{padding:9px 12px;border-radius:10px;border:0;cursor:pointer;background:var(--accent);color:#fff;font-weight:700}
+      .btn.secondary{background:#6b7280}
+
+      .muted{color:var(--muted)}
+      .list{max-height:360px;overflow:auto;display:grid;gap:10px}
+
+      #result > div{border-radius:10px;padding:10px}
+
+      @media(max-width:980px){
+        .layout{grid-template-columns:1fr}
+        .controls{justify-content:flex-start}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div>
+          <h1>TechCinema — OOP Booking System (Refactor)</h1>
+          <div class="muted">Các thực thể: Movie, Room, Customer, Ticket, Transaction, BookingSystem — private fields & internal logic</div>
+        </div>
+        <div>
+          <button id="resetBtn" class="btn">Reset Demo</button>
+        </div>
+      </header>
+
+      <div class="layout">
+        <main class="card">
+          <div class="controls">
+            <select id="movieSelect"></select>
+            <select id="roomSelect"></select>
+            <input id="customerName" placeholder="Tên khách" />
+            <input id="customerId" placeholder="Mã khách (ví dụ KH001)" />
+            <button id="addToCart" class="btn">Thêm vào giỏ</button>
+          </div>
+
+          <div id="seatContainer"></div>
+
+          <div class="legend" aria-hidden="true">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--success)"></span> Ghế trống</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-2)"></span> Đang chọn</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span> Đã bán</div>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+            <div class="muted">Giỏ hàng:</div>
+            <div id="cartSummary" class="muted">0 vé — 0 VNĐ</div>
+            <button id="checkoutBtn" class="btn">Thanh toán</button>
+          </div>
+
+          <div id="result" style="margin-top:12px"></div>
+        </main>
+
+        <aside>
+          <div class="card panel-compact">
+            <h3 class="muted">Báo cáo & Lịch sử</h3>
+            <div id="reportArea" class="list"></div>
+            <div id="dailyReport" class="muted" style="margin-top:8px"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+      // Utility deep clone & currency
+      const U = {
+        deepClone(v){ return JSON.parse(JSON.stringify(v)) },
+        formatVND(n){ return n.toLocaleString('vi-VN') + ' VNĐ' }
+      };
+
+      // --- Classes ---
+      class Movie {
+        #basePrice = 0;
+        constructor(id, title, basePrice = 0){
+          this.id = id ?? ('M' + Date.now());
+          this.title = title ?? 'Untitled';
+          this.basePrice = (typeof basePrice === 'number' ? basePrice : 0);
         }
-        this.#basePrice = value;
+        get basePrice(){ return this.#basePrice }
+        set basePrice(v){
+          if(typeof v !== 'number' || isNaN(v) || v < 0) throw new Error('Movie.basePrice phải là số >= 0');
+          this.#basePrice = v;
+        }
       }
-    }
 
-    class Room {
-      #seatMap;
-
-      constructor(roomId, rows = 3, cols = 4) {
-        this.roomId = roomId;
-        this.#seatMap = [];
-
-        for (let i = 0; i < rows; i++) {
-          const row = [];
-          for (let j = 0; j < cols; j++) {
-            row.push(false);
+      class Room {
+        #seatMap = [];
+        constructor(roomId, rows = 5, cols = 8, template=null){
+          this.roomId = roomId ?? ('R' + Math.floor(Math.random()*1000));
+          // initialize seatMap: false = free, true = booked
+          if(template && Array.isArray(template)){
+            // deep copy
+            this.#seatMap = U.deepClone(template).map(r => r.map(c => Boolean(c)));
+          } else {
+            for(let i=0;i<rows;i++){ this.#seatMap.push(new Array(cols).fill(false)); }
           }
-          this.#seatMap.push(row);
+        }
+
+        // return deep copy to avoid external mutation
+        get seatMap(){ return this.#seatMap.map(r => [...r]) }
+        set seatMap(map){
+          if(!Array.isArray(map) || !map.length) throw new Error('seatMap invalid');
+          if(!map.every(r => Array.isArray(r))) throw new Error('seatMap must be 2D array');
+          this.#seatMap = map.map(r => r.map(c => Boolean(c)));
+        }
+
+        rows(){ return this.#seatMap.length }
+        cols(){ return this.#seatMap[0]?.length ?? 0 }
+
+        isSeatBooked(row,col){
+          return !!(this.#seatMap[row] && this.#seatMap[row][col]);
+        }
+
+        // bookSeat returns true if success, false if already booked or invalid
+        bookSeat(row,col){
+          if(row<0||col<0||row>=this.rows()||col>=this.cols()) return false;
+          if(this.#seatMap[row][col]) return false;
+          this.#seatMap[row][col] = true;
+          return true;
         }
       }
 
-      get seatMap() {
-        return this.#seatMap.map(row => [...row]);
+      class Customer {
+        #balance = 0;
+        constructor(id, name, balance=0){ this.id = id; this.name = name; this.balance = balance }
+        get balance(){ return this.#balance }
+        set balance(v){ if(typeof v!=='number' || v<0) throw new Error('Balance must be >=0'); this.#balance = v }
       }
 
-      set seatMap(newSeatMap) {
-        if (!Array.isArray(newSeatMap) || newSeatMap.length === 0) {
-          throw new Error("Sơ đồ ghế không hợp lệ");
+      class Ticket {
+        #price = 0;
+        constructor(id, movie, room, customer, row, col, price){
+          this.id = id; this.movie = movie; this.room = room; this.customer = customer; this.row = row; this.col = col;
+          this.price = price; this.createdAt = new Date();
+        }
+        get price(){ return this.#price }
+        set price(v){ if(typeof v!=='number'||v<0) throw new Error('Ticket.price invalid'); this.#price = v }
+        info(){ return `${this.customer.name} - ${this.movie.title} - R${this.room.roomId} ${this.row+1}-${this.col+1} - ${U.formatVND(this.price)}` }
+      }
+
+      class Transaction {
+        constructor(id, items){ this.id = id; this.items = U.deepClone(items); this.createdAt = new Date(); this.total = items.reduce((s,i)=>s+i.price,0) }
+      }
+
+      class BookingSystem {
+        #transactionHistory = [];
+        #revenue = 0;
+        constructor(rooms = [], movies = []){ this.rooms = rooms; this.movies = movies }
+        get transactionHistory(){ return U.deepClone(this.#transactionHistory) }
+        get revenue(){ return this.#revenue }
+
+        findRoom(id){ return this.rooms.find(r=>r.roomId===id) }
+        findMovie(id){ return this.movies.find(m=>m.id===id) }
+
+        // buy multiple seats as items array {movieId, roomId, row, col, price, customer}
+        createTransaction(items){
+          if(!Array.isArray(items) || items.length===0) throw new Error('No items');
+          const tx = new Transaction('TX-'+Date.now(), items);
+          this.#transactionHistory.push(tx);
+          this.#revenue += tx.total;
+          return tx;
         }
 
-        const isValid = newSeatMap.every(row =>
-          Array.isArray(row) && row.every(seat => typeof seat === "boolean")
-        );
-
-        if (!isValid) {
-          throw new Error("Sơ đồ ghế chỉ được chứa giá trị true hoặc false");
-        }
-
-        this.#seatMap = newSeatMap.map(row => [...row]);
+        getDailyReport(){ return { totalTickets: this.#transactionHistory.reduce((s,tx)=>s+tx.items.length,0), totalRevenue: this.#revenue } }
       }
 
-      bookSeat(row, col) {
-        if (
-          row < 0 ||
-          col < 0 ||
-          row >= this.#seatMap.length ||
-          col >= this.#seatMap[row].length
-        ) {
-          return false;
-        }
+      // --- Demo data (no object literals for core entities) ---
+      const movieA = new Movie('M01','Avengers',90000);
+      const movieB = new Movie('M02','Dune Part Two',100000);
 
-        if (this.#seatMap[row][col] === true) {
-          return false;
-        }
+      // small seat template: 5 rows x 8 cols
+      const room1 = new Room('R01',5,8);
+      const room2 = new Room('R02',4,6);
 
-        this.#seatMap[row][col] = true;
-        return true;
+      const demoCustomer = new Customer('C01','Nguyễn Văn A',500000);
+
+      const bookingSystem = new BookingSystem([room1,room2],[movieA,movieB]);
+
+      // --- UI logic ---
+      const dom = {
+        movieSelect: document.getElementById('movieSelect'),
+        roomSelect: document.getElementById('roomSelect'),
+        seatContainer: document.getElementById('seatContainer'),
+        customerName: document.getElementById('customerName'),
+        customerId: document.getElementById('customerId'),
+        addToCart: document.getElementById('addToCart'),
+        checkoutBtn: document.getElementById('checkoutBtn'),
+        cartSummary: document.getElementById('cartSummary'),
+        result: document.getElementById('result'),
+        reportArea: document.getElementById('reportArea'),
+        dailyReport: document.getElementById('dailyReport'),
+        resetBtn: document.getElementById('resetBtn')
+      };
+
+      let selectedSeats = [];
+
+      function renderSelectors(){
+        dom.movieSelect.innerHTML = bookingSystem.movies.map(m=>`<option value="${m.id}">${m.title} - ${U.formatVND(m.basePrice)}</option>`).join('');
+        dom.roomSelect.innerHTML = bookingSystem.rooms.map(r=>`<option value="${r.roomId}">${r.roomId}</option>`).join('');
       }
 
-      isSeatBooked(row, col) {
-        return this.#seatMap[row][col] === true;
-      }
-    }
+      function renderSeatMap(){
+        const roomId = dom.roomSelect.value || bookingSystem.rooms[0].roomId;
+        const movieId = dom.movieSelect.value || bookingSystem.movies[0].id;
+        const room = bookingSystem.findRoom(roomId);
+        const movie = bookingSystem.findMovie(movieId);
 
-    class Customer {
-      #balance;
+        dom.seatContainer.innerHTML = '';
+        const map = room.seatMap; // deep copy
 
-      constructor(id, name, balance = 0) {
-        this.id = id;
-        this.name = name;
-        this.balance = balance;
-      }
-
-      get balance() {
-        return this.#balance;
-      }
-
-      set balance(value) {
-        if (typeof value !== "number" || value < 0) {
-          throw new Error("Số dư khách hàng không hợp lệ");
-        }
-        this.#balance = value;
-      }
-    }
-
-    class Ticket {
-      #price;
-
-      constructor(ticketId, movie, room, customer, row, col, price) {
-        this.ticketId = ticketId;
-        this.movie = movie;
-        this.room = room;
-        this.customer = customer;
-        this.row = row;
-        this.col = col;
-        this.price = price;
-        this.createdAt = new Date();
-      }
-
-      get price() {
-        return this.#price;
-      }
-
-      set price(value) {
-        if (typeof value !== "number" || value < 0) {
-          throw new Error("Giá vé của ticket không hợp lệ");
-        }
-        this.#price = value;
-      }
-
-      getInfo() {
-        return `
-          Mã vé: ${this.ticketId}<br>
-          Khách hàng: ${this.customer.name}<br>
-          Phim: ${this.movie.title}<br>
-          Phòng: ${this.room.roomId}<br>
-          Ghế: Hàng ${this.row + 1}, Cột ${this.col + 1}<br>
-          Giá vé: ${this.price.toLocaleString()} VNĐ
-        `;
-      }
-    }
-
-    class Transaction {
-      constructor(transactionId, ticket) {
-        this.transactionId = transactionId;
-        this.ticket = ticket;
-        this.createdAt = new Date();
-      }
-    }
-
-    class BookingSystem {
-      #transactionHistory;
-      #revenue;
-
-      constructor(rooms = [], movies = []) {
-        this.rooms = rooms;
-        this.movies = movies;
-        this.#transactionHistory = [];
-        this.#revenue = 0;
-      }
-
-      get revenue() {
-        return this.#revenue;
-      }
-
-      get transactionHistory() {
-        return [...this.#transactionHistory];
-      }
-
-      findRoom(roomId) {
-        return this.rooms.find(room => room.roomId === roomId);
-      }
-
-      findMovie(movieId) {
-        return this.movies.find(movie => movie.id === movieId);
-      }
-
-      buyTicket(customer, movieId, roomId, row, col) {
-        const movie = this.findMovie(movieId);
-        const room = this.findRoom(roomId);
-
-        if (!movie || !room) {
-          return null;
-        }
-
-        const isBooked = room.bookSeat(row, col);
-
-        if (!isBooked) {
-          return null;
-        }
-
-        const ticket = new Ticket(
-          "TICKET-" + Date.now(),
-          movie,
-          room,
-          customer,
-          row,
-          col,
-          movie.basePrice
-        );
-
-        const transaction = new Transaction(
-          "TRANS-" + Date.now(),
-          ticket
-        );
-
-        this.#transactionHistory.push(transaction);
-        this.#revenue += ticket.price;
-
-        return ticket;
-      }
-
-      getDailyReport() {
-        const totalTickets = this.#transactionHistory.length;
-
-        const totalRevenue = this.#transactionHistory.reduce((sum, transaction) => {
-          return sum + transaction.ticket.price;
-        }, 0);
-
-        return {
-          totalTickets,
-          totalRevenue
-        };
-      }
-
-      renderSeats(roomId, movieId, customer, containerId) {
-        const room = this.findRoom(roomId);
-        const container = document.getElementById(containerId);
-
-        container.innerHTML = "";
-
-        const seatMap = room.seatMap;
-
-        seatMap.forEach((row, rowIndex) => {
-          const rowDiv = document.createElement("div");
-
-          row.forEach((seat, colIndex) => {
-            const button = document.createElement("button");
-            button.className = "seat";
-            button.textContent = `${rowIndex + 1}-${colIndex + 1}`;
-
-            if (seat === true) {
-              button.classList.add("booked");
-            }
-
-            button.addEventListener("click", () => {
-              const ticket = this.buyTicket(
-                customer,
-                movieId,
-                roomId,
-                rowIndex,
-                colIndex
-              );
-
-              const result = document.getElementById("result");
-
-              if (ticket) {
-                result.innerHTML = `
-                  <h3>Đặt vé thành công</h3>
-                  ${ticket.getInfo()}
-                `;
-              } else {
-                result.innerHTML = "<h3>Ghế đã được đặt hoặc không hợp lệ</h3>";
+        map.forEach((row, rIdx)=>{
+          const rowDiv = document.createElement('div'); rowDiv.className='seat-row';
+          const label = document.createElement('div'); label.className='row-label'; label.textContent=String.fromCharCode(65+rIdx);
+          rowDiv.appendChild(label);
+          row.forEach((booked,cIdx)=>{
+            const btn = document.createElement('button');
+            btn.className='seat ' + (booked? 'booked':'free');
+            btn.textContent = (rIdx+1) + '-' + (cIdx+1);
+            // use arrow function referencing bookingSystem to avoid this-binding issues
+            btn.addEventListener('click', ()=>{
+              if(room.isSeatBooked(rIdx,cIdx)){
+                showResult('Ghế đã được bán',false); return;
               }
-
-              this.renderSeats(roomId, movieId, customer, containerId);
-              this.renderReport();
+              const exists = selectedSeats.find(s=>s.roomId===roomId && s.row===rIdx && s.col===cIdx);
+              if(exists){ selectedSeats = selectedSeats.filter(s=>!(s.roomId===roomId&&s.row===rIdx&&s.col===cIdx)); }
+              else { selectedSeats.push({ movieId: movie.id, roomId: room.roomId, row:rIdx, col:cIdx, price: movie.basePrice, customerId: dom.customerId.value || demoCustomer.id, customerName: dom.customerName.value || demoCustomer.name }); }
+              renderSeatMap(); renderCartSummary();
             });
 
-            rowDiv.appendChild(button);
-          });
+            // style selected
+            const sel = selectedSeats.find(s=>s.roomId===roomId && s.row===rIdx && s.col===cIdx);
+            if(sel) btn.classList.remove('free'), btn.classList.add('selected');
 
-          container.appendChild(rowDiv);
+            rowDiv.appendChild(btn);
+          });
+          dom.seatContainer.appendChild(rowDiv);
         });
       }
 
-      renderReport() {
-        const report = this.getDailyReport();
-
-        document.getElementById("report").innerHTML = `
-          <h3>Báo cáo doanh thu</h3>
-          Tổng số vé đã bán: ${report.totalTickets}<br>
-          Tổng doanh thu: ${report.totalRevenue.toLocaleString()} VNĐ
-        `;
+      function renderCartSummary(){
+        const count = selectedSeats.length;
+        const total = selectedSeats.reduce((s,i)=>s+i.price,0);
+        dom.cartSummary.textContent = `${count} vé — ${U.formatVND(total)}`;
       }
-    }
 
-    const movie1 = new Movie("M01", "Avengers", 90000);
-    const movie2 = new Movie("M02", "Spider Man", 85000);
+      function showResult(msg, ok=true){ dom.result.innerHTML = `<div style="padding:8px;border-radius:8px;background:${ok?'#ecfccb':'#fee2e2'}">${msg}</div>` }
 
-    const room1 = new Room("R01", 3, 4);
-    const room2 = new Room("R02", 4, 5);
+      function addToCartHandler(){
+        if(selectedSeats.length===0){ showResult('Chưa chọn ghế nào',false); return }
+        showResult(`Đã thêm ${selectedSeats.length} vé vào giỏ. Nhấn Thanh toán để hoàn tất.`,true);
+      }
 
-    const customer1 = new Customer("C01", "Nguyễn Văn A", 500000);
+      function checkoutHandler(){
+        try{
+          if(selectedSeats.length===0) throw new Error('Giỏ hàng rỗng');
+          // ensure customers provided
+          const cid = dom.customerId.value.trim() || demoCustomer.id;
+          const cname = dom.customerName.value.trim() || demoCustomer.name;
+          const customer = new Customer(cid, cname, demoCustomer.balance);
 
-    const bookingSystem = new BookingSystem(
-      [room1, room2],
-      [movie1, movie2]
-    );
+          // attempt to book seats via Room.bookSeat to ensure encapsulation
+          const items = [];
+          for(const s of selectedSeats){
+            const room = bookingSystem.findRoom(s.roomId);
+            const ok = room.bookSeat(s.row,s.col);
+            if(!ok) throw new Error('Một ghế đã bị đặt trước khi thanh toán.');
+            items.push(new Ticket('T-'+Date.now()+'-'+Math.random().toString(36).slice(2,6), bookingSystem.findMovie(s.movieId), room, customer, s.row, s.col, s.price));
+          }
 
-    bookingSystem.renderSeats("R01", "M01", customer1, "seatContainer");
-    bookingSystem.renderReport();
-  </script>
+          // create transaction (deep cloned inside)
+          const tx = bookingSystem.createTransaction(items.map(t=>({ id: t.id, movieId: t.movie.id, roomId: t.room.roomId, row: t.row, col: t.col, price: t.price, customerId: t.customer.id, customerName: t.customer.name })));
 
-</body>
+          // show success and clear
+          showResult(`Thanh toán thành công — Mã giao dịch: ${tx.id}`);
+          selectedSeats = [];
+          renderSeatMap(); renderCartSummary(); renderReportArea();
+        }catch(err){ showResult(err.message,false) }
+      }
+
+      function renderReportArea(){
+        const hist = bookingSystem.transactionHistory;
+        dom.reportArea.innerHTML = hist.slice().reverse().map(tx => `<div style="padding:8px;border-radius:8px;background:#f8fafc;border:1px solid #eef2ff">${tx.id} — ${tx.items.length} vé — ${U.formatVND(tx.total)}<br><small class=\"muted\">${new Date(tx.createdAt).toLocaleString()}</small></div>`).join('') || '<div class="muted">Chưa có giao dịch</div>';
+        const r = bookingSystem.getDailyReport();
+        dom.dailyReport.textContent = `Tổng vé: ${r.totalTickets} — Tổng doanh thu: ${U.formatVND(r.totalRevenue)}`;
+      }
+
+      function resetDemo(){
+        // reinstantiate new rooms/movies to avoid overriding instances
+        const m1 = new Movie('M01','Avengers',90000);
+        const m2 = new Movie('M02','Dune Part Two',100000);
+        const r1 = new Room('R01',5,8);
+        const r2 = new Room('R02',4,6);
+        bookingSystem.rooms = [r1,r2]; bookingSystem.movies = [m1,m2];
+        // clear private history by replacing object via reflection-like approach
+        // (we cannot access private fields) so recreate bookingSystem? keep same instance but reset via new instance
+        // simplest: create new BookingSystem and rebind
+        window.bookingSystem = new BookingSystem([r1,r2],[m1,m2]);
+        // replace local reference
+        // restore functions that use bookingSystem variable
+        // reassign
+        renderSelectors(); renderSeatMap(); renderCartSummary(); renderReportArea(); showResult('Đã reset demo',true);
+      }
+
+      // wire events
+      dom.movieSelect.addEventListener('change', ()=>{ renderSeatMap() });
+      dom.roomSelect.addEventListener('change', ()=>{ renderSeatMap() });
+      dom.addToCart.addEventListener('click', addToCartHandler);
+      dom.checkoutBtn.addEventListener('click', checkoutHandler);
+      dom.resetBtn.addEventListener('click', ()=>{ location.reload() });
+
+      // initial render
+      renderSelectors(); renderSeatMap(); renderCartSummary(); renderReportArea();
+    </script>
+  </body>
 </html>
